@@ -113,6 +113,7 @@ public class MainActivity extends AppCompatActivity {
     public void startCamera(PreviewView viewFinder) {
         ListenableFuture<ProcessCameraProvider> cameraProviderFuture = ProcessCameraProvider.getInstance(this);
 
+
         imageCapture = new ImageCapture.Builder().build();
         cameraProviderFuture.addListener(() -> {
             try {
