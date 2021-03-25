@@ -16,6 +16,9 @@ public class LogInActivity extends AppCompatActivity {
     ImageView img1,img2,img3,img4,img5,img6,img7,img8,img9,img0,img_sao,img_than, imgDelete;
     TextView txtPos1, txtPos2, txtPos3, txtPos4;
     String passwordDefault = "1235";
+
+
+
     String passWord = "";
     String a,b,c,d;
 
