@@ -42,7 +42,7 @@ import java.util.UUID;
 public class HomeFragment extends Fragment {
     // Init View
     private RecyclerView mRecyclerView;
-    private ImageView imgSearch;
+    private Button btnSearch;
 
     private List<BluetoothDevice> deviceItemList = new ArrayList<>();
 
@@ -51,8 +51,6 @@ public class HomeFragment extends Fragment {
     MainActivity mainActivity;
 
     private static HomeFragment homeFragment;
-
-    public boolean isConnected = false;
 
     public static HomeFragment getHomeFragment() {
         return homeFragment;
@@ -70,13 +68,14 @@ public class HomeFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mainActivity = ((MainActivity)getActivity());
-        imgSearch = view.findViewById(R.id.imgSearch);
+        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        mainActivity  = ((MainActivity)getActivity());
+        btnSearch     = view.findViewById(R.id.btnSearch);
         mRecyclerView = view.findViewById(R.id.recyclerView);
         // init Adapter
         myAdapterSearch = new MyAdapterSearch(deviceItemList);
         mRecyclerView.setAdapter(myAdapterSearch);
-        imgSearch.setOnClickListener(view1 -> mainActivity.clickSearch());
+        btnSearch.setOnClickListener(view1 -> mainActivity.clickSearch());
     }
 
     @Override
@@ -86,56 +85,7 @@ public class HomeFragment extends Fragment {
     }
 
     public void clickItem(int position){
-
-//        if (isConnected) {
-//            //show dialog bạn có muốn disconnect không?
-//            // có > isConnected = false
-//            // hủy > isConnected = true
-//            return;
-//        }
-        BluetoothDevice bluetoothDevice = deviceItemList.get(position);
-        try {
-            mainActivity.mBTSocket = bluetoothDevice.createInsecureRfcommSocketToServiceRecord(UUID.fromString(getUuid()));
-            mainActivity.bluetoothAdapter.cancelDiscovery();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            mainActivity.mBTSocket.connect();
-            // Log.e(TAG, "Connected");
-            //isConnected = true;
-
-            dialogCustom(Gravity.CENTER);
-        } catch (IOException e) {
-            Log.e("GGG", e.getMessage());
-           // isConnected = false;
-            try {
-                mainActivity.mBTSocket = (BluetoothSocket) bluetoothDevice.getClass().getMethod("createRfcommSocket",
-                        new Class[]{int.class}).invoke(bluetoothDevice, 1);
-                mainActivity.mBTSocket.connect();
-               // isConnected = true;
-                dialogCustom(Gravity.CENTER);
-            } catch (IOException | NoSuchMethodException ioException) {
-                ioException.printStackTrace();
-                //isConnected = false;
-            } catch (IllegalAccessException illegalAccessException) {
-                illegalAccessException.printStackTrace();
-                //isConnected = false;
-            } catch (InvocationTargetException invocationTargetException) {
-                invocationTargetException.printStackTrace();
-                //isConnected = false;
-            }
-        }
-
-//        if (isConnected) {
-////            mainActivity.switchFragment(new UpLoadFragment());
-////            mainActivity.bottomNav.setItemSelected(R.id.upload, false);
-//            Toast.makeText(getActivity(), "Connected Success", Toast.LENGTH_SHORT).show();
-//        } else {
-//            //Toast.makeText(getActivity(), "Connected Fail", Toast.LENGTH_SHORT).show();
-//        }
-
+        dialogCustom(Gravity.CENTER, position);
     }
 
     private String getUuid(){
@@ -150,7 +100,7 @@ public class HomeFragment extends Fragment {
         return s;
     }
 
-    private void dialogCustom(int gravity){
+    private void dialogCustom(int gravity, int position){
         final Dialog dialog = new Dialog(getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.dialog_custom_confirm);
@@ -173,24 +123,20 @@ public class HomeFragment extends Fragment {
         btnConnect = dialog.findViewById(R.id.btnConnectDialog);
         btnDisConnect = dialog.findViewById(R.id.btnDisconnectDialog);
 
-        btnConnect.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                isConnected = true;
-                mainActivity.switchFragment(new UpLoadFragment());
-                mainActivity.bottomNav.setItemSelected(R.id.upload, false);
-                Toast.makeText(mainActivity, "Connect", Toast.LENGTH_SHORT).show();
-                dialog.dismiss();
+        btnConnect.setOnClickListener(view -> {
+            mainActivity.clickItemBluetooth(position);
+            if (mainActivity.connectBluetooth()) {
+                mainActivity.switchFragment(new ManualFragment());
+                mainActivity.bottomNav.setSelectedItemId(R.id.manual);
+                Toast.makeText(mainActivity, "Connected", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(mainActivity, "Connect fail", Toast.LENGTH_SHORT).show();
             }
+            dialog.dismiss();
         });
 
-        btnDisConnect.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                isConnected = false;
-                Toast.makeText(mainActivity, "Disconnect", Toast.LENGTH_SHORT).show();
-                dialog.dismiss();
-            }
+        btnDisConnect.setOnClickListener(view -> {
+            dialog.dismiss();
         });
         dialog.show();
     }

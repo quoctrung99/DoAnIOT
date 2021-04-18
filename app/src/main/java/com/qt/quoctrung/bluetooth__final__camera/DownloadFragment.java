@@ -2,6 +2,8 @@ package com.qt.quoctrung.bluetooth__final__camera;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
@@ -16,6 +18,7 @@ import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -36,6 +39,11 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import com.arthenica.mobileffmpeg.Config;
+import com.arthenica.mobileffmpeg.FFmpeg;
+
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -44,6 +52,11 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import nl.bravobit.ffmpeg.ExecuteBinaryResponseHandler;
+
+import static com.arthenica.mobileffmpeg.FFmpeg.RETURN_CODE_CANCEL;
+import static com.arthenica.mobileffmpeg.FFmpeg.RETURN_CODE_SUCCESS;
 
 
 public class DownloadFragment extends Fragment {
@@ -81,8 +94,11 @@ public class DownloadFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         return inflater.inflate(R.layout.fragment_download, container, false);
+
     }
+
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -92,16 +108,61 @@ public class DownloadFragment extends Fragment {
 
         textureView.setSurfaceTextureListener(textureListener);
 
+
         btnTakePhoto.setOnClickListener(view1 -> {
             takePicture();
         });
 
+        view.findViewById(R.id.deleteResource2).setOnClickListener(view1 -> {
+            File folder = new File(getActivity().getFilesDir() + "/images");
+            if (folder.exists()) {
+                try {
+                    FileUtils.deleteDirectory(folder);
+                    Toast.makeText(getActivity(),"Delete success", Toast.LENGTH_SHORT).show();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    Toast.makeText(getActivity(),"Delete fail", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+        view.findViewById(R.id.merge).setOnClickListener(view1 -> {
+            new MergeVidieo().execute();
+        });
+        view.findViewById(R.id.btnPlay).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String url = "/data/user/0/com.qt.quoctrung.bluetooth__final__camera/files/a2.mp4";
+                Intent intent = new Intent(getActivity(), PlayVideoActivity.class);
+                intent.putExtra("video",url);
+                startActivity(intent);
+            }
+        });
+
+    }
+
+    private class MergeVidieo extends AsyncTask<Void, Void, Boolean> {
+
+        @Override
+        protected Boolean doInBackground(Void... voids) {
+//            mergeImageToVideo2();
+//            return true;
+            return mergeImageToVideo();
+        }
+
+        @Override
+        protected void onPostExecute(Boolean aBoolean) {
+            super.onPostExecute(aBoolean);
+            if (aBoolean) {
+                Log.d("FFFF", "onPostExecute: true");
+            } else {
+                Log.d("FFFF", "onPostExecute: false");
+            }
+        }
     }
 
     public void updateData(String data) {
-        Log.d("GGG", "value before if " + data);
         if (data.contains("1")) {
-            Log.d("GGG", "value after if " + data);
+            takePicture();
         }
     }
 
@@ -131,6 +192,7 @@ public class DownloadFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+//        ((MainActivity)getActivity()).connectThread();
         startBackgroundThread();
         if (textureView.isAvailable()) {
             if (allPermissionsGranted()) {
@@ -148,7 +210,14 @@ public class DownloadFragment extends Fragment {
     public void onPause() {
         closeCamera();
         stopBackgroundThread();
+//        ((MainActivity)getActivity()).disconnectBluetooth();
         super.onPause();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        Toast.makeText(getActivity(), "stop", Toast.LENGTH_SHORT).show();
     }
 
     private String cameraId;
@@ -269,6 +338,7 @@ public class DownloadFragment extends Fragment {
         }
     }
 
+    private int click = 0;
     protected void takePicture() {
         if (null == cameraDevice) {
             Log.e("GGG", "cameraDevice is null");
@@ -297,12 +367,17 @@ public class DownloadFragment extends Fragment {
             // Orientation
             int rotation = getActivity().getWindowManager().getDefaultDisplay().getRotation();
             captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, ORIENTATIONS.get(rotation));
-            final File file = new File(getActivity().getFilesDir().getPath() + "/pic.jpg");
+            File folder = new File(getActivity().getFilesDir() + "/images");
+            if (!folder.exists()) {
+                boolean a = folder.mkdirs();
+                Log.d("GGG", "takePicture: " + a);
+            }
+            final File file = new File(folder + "/IMG_" + click +".jpg");
             if (file.exists()) {
                 file.delete();
             }
             try {
-                file.mkdirs();
+//                file.mkdirs();
                 file.createNewFile();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -325,9 +400,12 @@ public class DownloadFragment extends Fragment {
                     try {
                         output = new FileOutputStream(file);
                         output.write(bytes);
+
                     } finally {
+                        click ++;
                         if (null != output) {
                             output.close();
+
                         }
                     }
                 }
@@ -337,8 +415,9 @@ public class DownloadFragment extends Fragment {
                 @Override
                 public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {
                     super.onCaptureCompleted(session, request, result);
-                    Toast.makeText(getActivity(), "Saved:" + file, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), "Saved:" + file.getPath(), Toast.LENGTH_SHORT).show();
                     createCameraPreview();
+                    Log.d("GGG", "onCaptureCompleted: " + file.getPath());
                 }
             };
             cameraDevice.createCaptureSession(outputSurfaces, new CameraCaptureSession.StateCallback() {
@@ -374,6 +453,60 @@ public class DownloadFragment extends Fragment {
             mBackgroundHandler = null;
         } catch (InterruptedException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void mergeImageToVideo2 () {
+        nl.bravobit.ffmpeg.FFmpeg ffmpeg = nl.bravobit.ffmpeg.FFmpeg.getInstance(getActivity());
+
+        // to execute "ffmpeg -version" command you just need to pass "-version"
+        String input = "/data/user/0/com.qt.quoctrung.bluetooth__final__camera/files/images/IMG_%d.jpg";
+        String output = "/data/user/0/com.qt.quoctrung.bluetooth__final__camera/files/images/a.mp4";
+        String[] cmd = {"-start_number", "0", "-i", input, output};
+        ffmpeg.execute(cmd, new ExecuteBinaryResponseHandler() {
+
+            @Override
+            public void onStart() {}
+
+            @Override
+            public void onProgress(String message) {
+                Log.d("GGGG", "onProgress: " + message);
+            }
+
+            @Override
+            public void onFailure(String message) {
+                Log.d("GGGG", "onFailure: " + message);
+            }
+
+            @Override
+            public void onSuccess(String message) {
+                Log.d("GGGG", "onSuccess: " + message);
+            }
+
+            @Override
+            public void onFinish() {}
+
+        });
+    }
+
+    private Boolean mergeImageToVideo () {
+        String input = "/data/user/0/com.qt.quoctrung.bluetooth__final__camera/files/images/IMG_%d.jpg";
+        String output = "/data/user/0/com.qt.quoctrung.bluetooth__final__camera/files/images/a.mp4";
+        String cmd = "-start_number 0 -i "+ input + " -r 30 -video_size 1280x720 -vcodec libx264 " + output;
+        //String cmd = "-framerate 1 -start_number 0 -i /data/user/0/com.qt.quoctrung.bluetooth__final__camera/files/IMG_%d.jpg -r 24 -video_size 1280x720 -vcodec libx264 /data/user/0/com.qt.quoctrung.bluetooth__final__camera/files/a2.mp4";
+        int rc = FFmpeg.execute(cmd);
+
+        if (rc == RETURN_CODE_SUCCESS) {
+            click = 0;
+            Log.i(Config.TAG, "Command execution completed successfully.");
+            return true;
+        } else if (rc == RETURN_CODE_CANCEL) {
+            Log.i(Config.TAG, "Command execution cancelled by user.");
+            return false;
+        } else {
+            Log.i(Config.TAG, String.format("Command execution failed with rc=%d and the output below.", rc));
+//            Config.printLastCommandOutput(Log.INFO);
+            return false;
         }
     }
 }

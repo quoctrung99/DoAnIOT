@@ -1,6 +1,5 @@
 package com.qt.quoctrung.bluetooth__final__camera;
 
-import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -31,8 +30,8 @@ public class UpLoadFragment extends Fragment {
     private String mParam1;
     private String mParam2;
     private Button btnControl, btnTurnOff;
-    final static String ON = "1";
-    final static String OFF= "0";
+    final static String ON  = "1";
+    final static String OFF = "0";
     private MyAdapterShowData myAdapterShowData;
     RecyclerView recyclerViewFrag;
     private List<String> listData;
@@ -57,7 +56,8 @@ public class UpLoadFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
-        ((MainActivity)getActivity()).createReadInput();
+        ((MainActivity)getActivity()).connectThread();
+
     }
 
     @Override

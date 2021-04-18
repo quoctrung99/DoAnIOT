@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#2d2d2d"
+    tools:context=".AutoFragment">
+
+    <Button
+        android:id="@+id/btnStopDistance"
+        android:layout_width="0dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/btn_google"
+        android:fontFamily="@font/regular"
+        android:text="Stop"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="@+id/btnStartDistance"
+        app:layout_constraintStart_toStartOf="@+id/btnStartDistance"
+        app:layout_constraintTop_toBottomOf="@+id/btnStartDistance" />
+
+    <Button
+        android:id="@+id/btnStartDistance"
+        android:layout_width="0dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="24dp"
+        android:background="@drawable/btn_facebook"
+        android:fontFamily="@font/regular"
+        android:text="Start"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="@+id/btnStopLineAuto"
+        app:layout_constraintStart_toStartOf="@+id/btnStopLineAuto"
+        app:layout_constraintTop_toBottomOf="@+id/btnStopLineAuto" />
+
+    <EditText
+        android:id="@+id/edtDistanceAuto"
+        android:layout_width="120dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="120dp"
+
+        android:background="@drawable/custom_edittext"
+        android:drawableEnd="@drawable/ic_baseline_social_distance_24"
+        android:ems="10"
+        android:hint="Distance"
+        android:inputType="number"
+        android:padding="9dp"
+        android:textAlignment="center"
+        android:textColor="@color/white"
+        android:textColorHint="#6A6464"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/imageView21"
+        app:layout_constraintTop_toTopOf="@+id/imageView21"
+        app:layout_constraintVertical_bias="0.51" />
+
+    <Button
+        android:id="@+id/btnStopLineAuto"
+        android:layout_width="0dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/btn_google"
+        android:fontFamily="@font/regular"
+        android:text="Stop"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="@+id/btnStartLineAuto"
+        app:layout_constraintStart_toStartOf="@+id/btnStartLineAuto"
+        app:layout_constraintTop_toBottomOf="@+id/btnStartLineAuto" />
+
+    <Button
+        android:id="@+id/btnStartLineAuto"
+        android:layout_width="0dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/btn_facebook"
+        android:fontFamily="@font/regular"
+        android:text="Start"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="@+id/edtDirectionLine"
+        app:layout_constraintStart_toStartOf="@+id/edtDirectionLine"
+        app:layout_constraintTop_toBottomOf="@+id/edtDirectionLine" />
+
+    <EditText
+        android:id="@+id/edtDirectionLine"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+
+        android:background="@drawable/custom_edittext"
+        android:drawableEnd="@drawable/ic_baseline_directions_24"
+        android:ems="10"
+        android:hint="Direction"
+        android:inputType="number"
+        android:padding="9dp"
+        android:textAlignment="center"
+        android:textColor="@color/white"
+        android:textColorHint="#6A6464"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="@+id/edtVelocityLine"
+        app:layout_constraintStart_toStartOf="@+id/edtVelocityLine"
+        app:layout_constraintTop_toBottomOf="@+id/edtVelocityLine" />
+
+    <EditText
+        android:id="@+id/edtVelocityLine"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+
+        android:background="@drawable/custom_edittext"
+        android:drawableEnd="@drawable/velocity"
+        android:ems="10"
+        android:hint="Velocity"
+        android:inputType="number"
+        android:padding="9dp"
+        android:textAlignment="center"
+        android:textColor="@color/white"
+        android:textColorHint="#6A6464"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/edtLengthAuto"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/btnStopCAuto"
+        android:layout_width="0dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/btn_google"
+        android:text="Stop"
+        android:textSize="20sp"
+        android:fontFamily="@font/regular"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        app:layout_constraintEnd_toEndOf="@+id/edtRadiusAuto"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/edtRadiusAuto"
+        app:layout_constraintTop_toBottomOf="@+id/btnStartCAuto" />
+
+    <EditText
+        android:id="@+id/edtRadiusAuto"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:textSize="16sp"
+        android:background="@drawable/custom_edittext"
+        android:textColor="@color/white"
+        android:ems="10"
+        android:hint="Radius"
+        android:padding="8dp"
+        android:textAlignment="center"
+        android:inputType="number"
+        android:drawableEnd="@drawable/radius1"
+        android:textColorHint="#6A6464"
+        app:layout_constraintEnd_toStartOf="@+id/guideline7"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toEndOf="@+id/circular"
+        app:layout_constraintTop_toBottomOf="@+id/edtVelocityAuto" />
+
+    <hiennguyen.me.circleseekbar.CircleSeekBar
+
+        android:id="@+id/circular"
+        android:layout_width="220dp"
+        android:layout_height="220dp"
+        android:padding="50dp"
+        app:csb_arcColor="@color/color_arc"
+        app:csb_arcWidth="6dp"
+        app:csb_max="360"
+        app:csb_min="0"
+        app:csb_progressColor="#C53B10"
+        app:csb_progressWidth="12dp"
+        app:csb_step="1"
+        app:csb_textColor="@color/color_text"
+        app:csb_textSize="30sp"
+        app:csb_thumbDrawable="@drawable/thumb1"
+        app:csb_thumbSize="30dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline7"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.5" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline8"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.5" />
+
+    <TextView
+        android:id="@+id/txtDegree"
+        android:layout_width="80dp"
+        android:layout_height="wrap_content"
+        android:background="#2d2d2d"
+        android:fontFamily="@font/regular"
+        android:textAlignment="center"
+        android:textColor="@color/white"
+        android:textSize="32sp"
+        app:layout_constraintBottom_toBottomOf="@+id/circular"
+        app:layout_constraintEnd_toEndOf="@+id/circular"
+        app:layout_constraintStart_toStartOf="@+id/circular"
+        app:layout_constraintTop_toTopOf="@+id/circular" />
+
+    <EditText
+        android:id="@+id/edtVelocityAuto"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/custom_edittext"
+        android:drawableEnd="@drawable/velocity"
+        android:ems="10"
+
+        android:hint="Velocity"
+        android:inputType="number"
+        android:padding="9dp"
+        android:textAlignment="center"
+        android:textColor="@color/white"
+        android:textColorHint="#6A6464"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toStartOf="@+id/guideline7"
+        app:layout_constraintStart_toEndOf="@+id/circular"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/btnStartCAuto"
+        android:layout_width="0dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/btn_facebook"
+        android:text="Start"
+        android:textSize="20sp"
+        android:textColor="@color/white"
+        android:fontFamily="@font/regular"
+        android:textAllCaps="false"
+        app:layout_constraintEnd_toEndOf="@+id/edtRadiusAuto"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/edtRadiusAuto"
+        app:layout_constraintTop_toBottomOf="@+id/edtRadiusAuto" />
+
+    <SeekBar
+        android:id="@+id/seekBarLineAuto"
+        android:layout_width="220dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:indeterminate="false"
+        android:max="100"
+        android:progress="0"
+        android:progressDrawable="@drawable/track"
+        android:rotation="90"
+        android:thumb="@drawable/thumb"
+        app:layout_constraintBottom_toTopOf="@+id/guideline8"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline7"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.53" />
+
+    <EditText
+        android:id="@+id/edtLengthAuto"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/custom_edittext"
+        android:ems="10"
+        android:hint="Length"
+        android:inputType="number"
+        android:padding="6dp"
+        android:rotation="-90"
+        android:textAlignment="center"
+        android:textColor="@color/white"
+        android:textColorHint="#6A6464"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toBottomOf="@+id/seekBarLineAuto"
+        app:layout_constraintEnd_toEndOf="@+id/seekBarLineAuto"
+        app:layout_constraintHorizontal_bias="0.16"
+        app:layout_constraintStart_toStartOf="@+id/seekBarLineAuto"
+        app:layout_constraintTop_toTopOf="@+id/seekBarLineAuto" />
+
+    <ImageView
+        android:id="@+id/imageView21"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:src="@drawable/duongcong"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline8"
+        app:layout_constraintVertical_bias="0.428" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

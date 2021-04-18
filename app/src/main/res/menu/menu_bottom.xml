@@ -12,18 +12,37 @@
         android:id="@+id/home"/>
 
     <item
-        android:icon="@drawable/ic_baseline_cloud_download_24"
+        android:icon="@drawable/ic_baseline_fiber_manual_record_24"
         app:cnb_backgroundColor="#ff785b"
         app:cnb_iconColor="#fff"
         app:cnb_textColor="#fff"
-        android:title="Download"
-        android:id="@+id/upload"/>
+        android:title="Manual"
+        android:id="@+id/manual"/>
+    <item
+        android:icon="@drawable/ic_auto"
+        app:cnb_backgroundColor="#ff785b"
+        app:cnb_iconColor="#fff"
+        app:cnb_textColor="#fff"
+        android:title="Auto"
+        android:id="@+id/auto"/>
 
     <item
-        android:icon="@drawable/ic_baseline_cloud_upload_24"
+        android:icon="@drawable/ic_baseline_linked_camera_24"
         app:cnb_backgroundColor="#ff785b"
         app:cnb_iconColor="#fff"
         app:cnb_textColor="#fff"
-        android:title="Upload"
+        android:title="Camera"
         android:id="@+id/download"/>
+
+    <item
+        android:icon="@drawable/ic_baseline_info_24"
+        app:cnb_backgroundColor="#ff785b"
+        app:cnb_iconColor="#fff"
+        app:cnb_textColor="#fff"
+        android:title="Info"
+        android:id="@+id/upload"/>
+
+
+
+
 </menu>
