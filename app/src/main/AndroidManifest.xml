@@ -28,7 +28,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.BLUETOOTH__FINAL__CAMERA"
         tools:replace="android:theme">
-        <activity android:name=".LogInActivity"></activity>
+        <activity android:name=".LogInActivity"/>
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|screenSize" />

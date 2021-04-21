@@ -1,26 +1,11 @@
 package com.qt.quoctrung.bluetooth__final__camera;
 
 import android.app.Dialog;
-import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothSocket;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.os.AsyncTask;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.RecyclerView;
-
-import android.os.Handler;
-import android.os.ParcelUuid;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,15 +13,15 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.Toast;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.RecyclerView;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 
 
 public class HomeFragment extends Fragment {
@@ -88,18 +73,6 @@ public class HomeFragment extends Fragment {
         dialogCustom(Gravity.CENTER, position);
     }
 
-    private String getUuid(){
-        Set<BluetoothDevice> pairedDevices = mainActivity.bluetoothAdapter.getBondedDevices();
-        String s = "";
-        for (BluetoothDevice device: pairedDevices){
-            for (ParcelUuid uuid: device.getUuids()){
-                s = uuid.toString();
-            }
-        }
-        //Log.d(TAG, "getUuid: " + s);
-        return s;
-    }
-
     private void dialogCustom(int gravity, int position){
         final Dialog dialog = new Dialog(getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -124,9 +97,8 @@ public class HomeFragment extends Fragment {
         btnDisConnect = dialog.findViewById(R.id.btnDisconnectDialog);
 
         btnConnect.setOnClickListener(view -> {
-            mainActivity.clickItemBluetooth(position);
-            if (mainActivity.connectBluetooth()) {
-                mainActivity.switchFragment(new ManualFragment());
+            if (BluetoothManager.getInstance().connectBluetooth(mainActivity.getBluetoothDevice(position))) {
+                mainActivity.addFragment(new ManualFragment());
                 mainActivity.bottomNav.setSelectedItemId(R.id.manual);
                 Toast.makeText(mainActivity, "Connected", Toast.LENGTH_SHORT).show();
             } else {

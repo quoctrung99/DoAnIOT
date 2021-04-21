@@ -3,11 +3,6 @@ package com.qt.quoctrung.bluetooth__final__camera;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -15,6 +10,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 
 import java.io.IOException;
 
@@ -40,9 +39,9 @@ public class ManualFragment extends Fragment {
     final static String MANUAL = "M";
     final static String Release = "N";    // TOP
 
-    public ManualFragment() {
-        // Required empty public constructor
-    }
+    private BluetoothManager bluetoothManager;
+
+    public ManualFragment() {}
 
     public static ManualFragment newInstance(String param1, String param2) {
         ManualFragment fragment = new ManualFragment();
@@ -59,18 +58,17 @@ public class ManualFragment extends Fragment {
         if (getArguments() != null) {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
-
         }
+
         ((MainActivity)getActivity()).connectThread();
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         return inflater.inflate(R.layout.fragment_manual, container, false);
     }
+
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
@@ -92,13 +90,13 @@ public class ManualFragment extends Fragment {
         imgBottom = view.findViewById(R.id.imgBottom);
         imgLeft   = view.findViewById(R.id.imgLeft);
         imgRight  = view.findViewById(R.id.imgRight);
-
+        bluetoothManager = BluetoothManager.getInstance();
 
         imgTop.setOnTouchListener((view1, motionEvent) -> {
             if(motionEvent.getAction() == MotionEvent.ACTION_DOWN){
                 imgTop.setImageResource(R.drawable.arrow_light);
                 try {
-                    ((MainActivity)getActivity()).mBTSocket.getOutputStream().write((TOP).getBytes());
+                    bluetoothManager.getBluetoothSocket().getOutputStream().write((TOP).getBytes());
                     Toast.makeText(getContext(), TOP, Toast.LENGTH_SHORT).show();
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -110,11 +108,12 @@ public class ManualFragment extends Fragment {
 
             return true;
         });
+
         imgBottom.setOnTouchListener((view12, motionEvent) -> {
             if(motionEvent.getAction() == MotionEvent.ACTION_DOWN){
                 imgBottom.setImageResource(R.drawable.arrow_light);
                 try {
-                    ((MainActivity)getActivity()).mBTSocket.getOutputStream().write((BOTTOM).getBytes());
+                    bluetoothManager.getBluetoothSocket().getOutputStream().write((BOTTOM).getBytes());
                     Toast.makeText(getContext(), BOTTOM, Toast.LENGTH_SHORT).show();
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -130,7 +129,7 @@ public class ManualFragment extends Fragment {
             if(motionEvent.getAction() == MotionEvent.ACTION_DOWN){
                 imgLeft.setImageResource(R.drawable.arrow_light);
                 try {
-                    ((MainActivity)getActivity()).mBTSocket.getOutputStream().write((LEFT).getBytes());
+                    bluetoothManager.getBluetoothSocket().getOutputStream().write((LEFT).getBytes());
                     Toast.makeText(getContext(), LEFT, Toast.LENGTH_SHORT).show();
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -143,23 +142,20 @@ public class ManualFragment extends Fragment {
 
         });
 
-        imgRight.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                if(motionEvent.getAction() == MotionEvent.ACTION_DOWN){
-                    imgRight.setImageResource(R.drawable.arrow_light);
-                    try {
-                        ((MainActivity)getActivity()).mBTSocket.getOutputStream().write((RIGHT).getBytes());
-                        Toast.makeText(getContext(), RIGHT, Toast.LENGTH_SHORT).show();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+        imgRight.setOnTouchListener((view14, motionEvent) -> {
+            if(motionEvent.getAction() == MotionEvent.ACTION_DOWN){
+                imgRight.setImageResource(R.drawable.arrow_light);
+                try {
+                    bluetoothManager.getBluetoothSocket().getOutputStream().write((RIGHT).getBytes());
+                    Toast.makeText(getContext(), RIGHT, Toast.LENGTH_SHORT).show();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-                else if(motionEvent.getAction() == MotionEvent.ACTION_UP){
-                    imgRight.setImageResource(R.drawable.arrow);
-                }
-                return true;
             }
+            else if(motionEvent.getAction() == MotionEvent.ACTION_UP){
+                imgRight.setImageResource(R.drawable.arrow);
+            }
+            return true;
         });
 
     }

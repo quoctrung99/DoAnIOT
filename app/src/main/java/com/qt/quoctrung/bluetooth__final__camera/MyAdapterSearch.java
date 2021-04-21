@@ -1,6 +1,5 @@
 package com.qt.quoctrung.bluetooth__final__camera;
 
-import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -52,6 +51,7 @@ class MyAdapterSearch extends RecyclerView.Adapter<MyAdapterSearch.SearchHolder>
             });
         }
     }
+
     public void addListData(List<BluetoothDevice> deviceList){
         mListBlue.clear();
         mListBlue.addAll(deviceList);
