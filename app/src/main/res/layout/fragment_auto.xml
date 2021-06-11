@@ -98,7 +98,7 @@
         android:drawableEnd="@drawable/ic_baseline_directions_24"
         android:ems="10"
         android:hint="Direction"
-        android:inputType="number"
+        android:inputType="numberSigned"
         android:padding="9dp"
         android:textAlignment="center"
         android:textColor="@color/white"
@@ -117,7 +117,7 @@
         android:layout_marginEnd="16dp"
 
         android:background="@drawable/custom_edittext"
-        android:drawableEnd="@drawable/velocity"
+        android:drawableEnd="@drawable/icon_velocity"
         android:ems="10"
         android:hint="Velocity"
         android:inputType="number"
@@ -159,7 +159,7 @@
         android:padding="8dp"
         android:textAlignment="center"
         android:inputType="number"
-        android:drawableEnd="@drawable/radius1"
+        android:drawableEnd="@drawable/icon_radius1111"
         android:textColorHint="#6A6464"
         app:layout_constraintEnd_toStartOf="@+id/guideline7"
         app:layout_constraintHorizontal_bias="1.0"
@@ -220,9 +220,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:background="@drawable/custom_edittext"
-        android:drawableEnd="@drawable/velocity"
+        android:drawableEnd="@drawable/icon_velocity"
         android:ems="10"
-
         android:hint="Velocity"
         android:inputType="number"
         android:padding="9dp"
@@ -297,6 +296,19 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline8"
         app:layout_constraintVertical_bias="0.428" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/floatingAuto"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/white"
+        android:clickable="true"
+        android:src="@drawable/ic_baseline_menu_24"
+        app:layout_constraintBottom_toBottomOf="@+id/edtDistanceAuto"
+        app:layout_constraintEnd_toStartOf="@+id/edtDistanceAuto"
+        app:layout_constraintHorizontal_bias="0.21"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/edtDistanceAuto" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

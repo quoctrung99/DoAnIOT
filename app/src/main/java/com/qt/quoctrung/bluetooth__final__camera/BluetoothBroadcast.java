@@ -12,12 +12,8 @@ public class BluetoothBroadcast extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
-        if ("abcd".equals(action)) {
-
-        }
         if (BluetoothDevice.ACTION_FOUND.equals(action)) {
             BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-            //Toast.makeText(context, "ACTION_FOUND: " + device.getName(), Toast.LENGTH_SHORT).show();
         } else if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)){
             Toast.makeText(context, "ACTION_DISCOVERY_STARTED: ", Toast.LENGTH_SHORT).show();
         } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)){
@@ -28,6 +24,8 @@ public class BluetoothBroadcast extends BroadcastReceiver {
             Toast.makeText(context, "ACTION_REQUEST_DISCOVERABLE: ", Toast.LENGTH_SHORT).show();
         } else if (BluetoothAdapter.ACTION_SCAN_MODE_CHANGED.equals(action)){
             Toast.makeText(context, "ACTION_SCAN_MODE_CHANGED: ", Toast.LENGTH_SHORT).show();
+        } else if ("android.bluetooth.device.action.ACL_DISCONNECTED".equals(action)){
+
         }
     }
 }

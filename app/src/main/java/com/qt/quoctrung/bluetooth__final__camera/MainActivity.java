@@ -1,19 +1,28 @@
 package com.qt.quoctrung.bluetooth__final__camera;
 
+import android.app.Dialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -27,10 +36,33 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     public static final int BT_ENABLE_REQUEST = 10;
     public List<BluetoothDevice> deviceItemList = new ArrayList<>();
     public boolean isFind = false;
-    public BluetoothBroadcast mReceiver = new BluetoothBroadcast();
+
+    public BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+            } else if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
+                Toast.makeText(context, "ACTION_DISCOVERY_STARTED: ", Toast.LENGTH_SHORT).show();
+            } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
+                Toast.makeText(context, "ACTION_DISCOVERY_FINISHED: ", Toast.LENGTH_SHORT).show();
+            } else if (BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED.equals(action)) {
+                Toast.makeText(context, "ACTION_CONNECTION_STATE_CHANGED: ", Toast.LENGTH_SHORT).show();
+            } else if (BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE.equals(action)) {
+                Toast.makeText(context, "ACTION_REQUEST_DISCOVERABLE: ", Toast.LENGTH_SHORT).show();
+            } else if (BluetoothAdapter.ACTION_SCAN_MODE_CHANGED.equals(action)) {
+                Toast.makeText(context, "ACTION_SCAN_MODE_CHANGED: ", Toast.LENGTH_SHORT).show();
+            } else if ("android.bluetooth.device.action.ACL_DISCONNECTED".equals(action)) {
+                disconnectThread();
+            }
+        }
+    };
+
     private ConnectThread connectThread = null;
 
     private BluetoothManager bluetoothManager;
+    public boolean bCheckDisconnect = false;
 
     public void clickSearch() {
         if (!isFind) {
@@ -53,21 +85,19 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     }
 
     private void stopFindBluetooth() {
-        if (mReceiver.getDebugUnregister()) {
-            unregisterReceiver(mReceiver);
-            bluetoothManager.cancelDiscovery();
-        }
+        unregisterReceiver(mReceiver);
+        bluetoothManager.cancelDiscovery();
     }
 
     private void findBluetooth() {
         IntentFilter filter = new IntentFilter();
         filter.addAction(BluetoothDevice.ACTION_FOUND);
-        filter.addAction("abcd");
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
         filter.addAction(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED);
         filter.addAction(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED);
         filter.addAction(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+        filter.addAction("android.bluetooth.device.action.ACL_DISCONNECTED");
         registerReceiver(mReceiver, filter);
         bluetoothManager.startDiscovery();
     }
@@ -198,7 +228,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     }
 
     private class ConnectThread implements Runnable {
-        private Thread t;
+        private final Thread t;
 
         public ConnectThread() {
             t = new Thread(this, "Input Thread");
@@ -250,18 +280,15 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     public void disconnectThread() {
         new DisconnectThreadInput().execute();
     }
-
     public class DisconnectThreadInput extends AsyncTask<Void,Void,Boolean>{
+
         @Override
         protected Boolean doInBackground(Void... voids) {
             if (connectThread != null) {
-                while (connectThread.isRunning()) {
-                    if (connectThread == null) break;
-                    connectThread.stop();
-                    connectThread = null;
-                }
+                connectThread.stop();
+                while (connectThread.isRunning());
+                connectThread = null;
             }
-
             try {
                 bluetoothManager.getBluetoothSocket().close();
                 return true;
@@ -269,13 +296,39 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 e.printStackTrace();
                 return false;
             }
+
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
         }
 
         @Override
         protected void onPostExecute(Boolean aBoolean) {
             super.onPostExecute(aBoolean);
+            bCheckDisconnect = true;
             Toast.makeText(MainActivity.this, "Disconnected to device", Toast.LENGTH_SHORT).show();
+            displayDialogAngle(Gravity.CENTER);
         }
     }
 
-}
+    public void displayDialogAngle(int gravity) {
+        final Dialog dialog = new Dialog(this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_step_angle);
+        Window window = dialog.getWindow();
+        if (window == null) return;
+        window.getAttributes().windowAnimations = R.style.DialogAnimation;
+        window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
+        window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        WindowManager.LayoutParams windowAttributes = window.getAttributes();
+        windowAttributes.gravity = gravity;
+        window.setAttributes(windowAttributes);
+        dialog.setCancelable(Gravity.CENTER != gravity);
+        dialog.show();
+    }
+
+
+    }

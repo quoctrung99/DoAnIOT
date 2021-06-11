@@ -1,19 +1,28 @@
 package com.qt.quoctrung.bluetooth__final__camera;
 
 import android.Manifest;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Camera;
+import android.graphics.Color;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
+import android.graphics.drawable.ColorDrawable;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CameraMetadata;
+import android.hardware.camera2.CaptureFailure;
 import android.hardware.camera2.CaptureRequest;
+import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
@@ -25,22 +34,34 @@ import android.os.HandlerThread;
 import android.util.Log;
 import android.util.Size;
 import android.util.SparseIntArray;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.GridLayout;
+import android.widget.PopupWindow;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.camera.core.impl.CameraCaptureCallback;
+import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.arthenica.mobileffmpeg.Config;
 import com.arthenica.mobileffmpeg.FFmpeg;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.qt.quoctrung.bluetooth__final__camera.model.Video;
 
 import org.apache.commons.io.FileUtils;
 
@@ -53,18 +74,34 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import nl.bravobit.ffmpeg.ExecuteBinaryResponseHandler;
+import static com.arthenica.mobileffmpeg.Config.RETURN_CODE_CANCEL;
+import static com.arthenica.mobileffmpeg.Config.RETURN_CODE_SUCCESS;
+import static com.arthenica.mobileffmpeg.Config.getExternalLibraries;
 
-import static com.arthenica.mobileffmpeg.FFmpeg.RETURN_CODE_CANCEL;
-import static com.arthenica.mobileffmpeg.FFmpeg.RETURN_CODE_SUCCESS;
 
-
-public class DownloadFragment extends Fragment {
+public class DownloadFragment extends Fragment  {
 
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
-
     private TextureView textureView;
+    private FloatingActionButton floatingBtn;
+    private PopupWindow window;
+    private GridLayout gridLayout;
+    private BluetoothManager bluetoothManager;
+
+    String valRadiusCurve, valVideoLength, valTimeAction;
+    String valOutput;
+    public  String OUTPUT_VIDEO       = "/data/user/0/com.qt.quoctrung.bluetooth__final__camera/files/images/a.mp4";
+    public  String INPUT_VIDEO        = "/data/user/0/com.qt.quoctrung.bluetooth__final__camera/files/images/IMG_%d.jpg";
+    public  String FOLDER_IMAGE = "/data/user/0/com.qt.quoctrung.bluetooth__final__camera/files/images/";
+    public  String FOLDER_VIDEO = "/data/user/0/com.qt.quoctrung.bluetooth__final__camera/files/videos/";
+
+
+    //init params camera
+    private static final int ACTIVITY_START_CAMERA_APP = 0;
+    private static final int STATE_PREVIEW = 0;
+    private static final int STATE_WAIT_LOCK = 1;
+    private int mState;
 
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
 
@@ -77,11 +114,12 @@ public class DownloadFragment extends Fragment {
 
     private static final int REQUEST_CODE_PERMISSIONS = 10;
     private final String[] REQUIRED_PERMISSIONS = new String[]{"android.permission.CAMERA", "android.permission.WRITE_EXTERNAL_STORAGE"};
-    Button btnTakePhoto;
+
 
     public DownloadFragment() {
         // Required empty public constructor
     }
+
 
     public static DownloadFragment newInstance(String param1, String param2) {
         DownloadFragment fragment = new DownloadFragment();
@@ -92,74 +130,107 @@ public class DownloadFragment extends Fragment {
         return fragment;
     }
 
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
         return inflater.inflate(R.layout.fragment_download, container, false);
 
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        ((MainActivity)getActivity()).connectThread();
+    }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        btnTakePhoto = view.findViewById(R.id.camera_capture_button);
-        textureView = view.findViewById(R.id.texture);
 
+        textureView = view.findViewById(R.id.texture);
+        floatingBtn = view.findViewById(R.id.floatingActionButton2);
+        gridLayout  = view.findViewById(R.id.submitPopup);
+        bluetoothManager = BluetoothManager.getInstance();
+
+        LocalBroadcastManager localBroadcastManager = LocalBroadcastManager.getInstance(getActivity());
+        localBroadcastManager.registerReceiver(receiver, new IntentFilter("updatePercent"));
+
+        floatingBtn.setOnClickListener(view1 -> ShowPopupWindow());
         textureView.setSurfaceTextureListener(textureListener);
 
-
-        btnTakePhoto.setOnClickListener(view1 -> {
-            takePicture();
-        });
-
-        view.findViewById(R.id.deleteResource2).setOnClickListener(view1 -> {
-            File folder = new File(getActivity().getFilesDir() + "/images");
-            if (folder.exists()) {
-                try {
-                    FileUtils.deleteDirectory(folder);
-                    Toast.makeText(getActivity(),"Delete success", Toast.LENGTH_SHORT).show();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    Toast.makeText(getActivity(),"Delete fail", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-        view.findViewById(R.id.merge).setOnClickListener(view1 -> {
-            new MergeVidieo().execute();
-        });
-        view.findViewById(R.id.btnPlay).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String url = "/data/user/0/com.qt.quoctrung.bluetooth__final__camera/files/a2.mp4";
-                Intent intent = new Intent(getActivity(), PlayVideoActivity.class);
-                intent.putExtra("video",url);
-                startActivity(intent);
-            }
-        });
-
+        startBackgroundThread();
     }
 
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent != null) {
+                float percent = intent.getIntExtra("key", 0);
+                TextView txtLoading = dialogAnimationMerge.findViewById(R.id.txtLoadingAnim);
+                txtLoading.setText(percent+"%");
+            }
+        }
+    };
+
+
+    private void sendBroadcast(int value) {
+        Intent intent = new Intent("updatePercent");
+        intent.putExtra("key", value);
+        LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(intent);
+    }
+
+
+    private Dialog dialogAnimationMerge;
     private class MergeVidieo extends AsyncTask<Void, Void, Boolean> {
+        private int percent;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            dialogAnimation(Gravity.CENTER);
+            percentMerge();
+        }
 
         @Override
         protected Boolean doInBackground(Void... voids) {
-//            mergeImageToVideo2();
-//            return true;
-            return mergeImageToVideo();
+            return mergeImageToVideo(valOutput);
         }
+
+
 
         @Override
         protected void onPostExecute(Boolean aBoolean) {
             super.onPostExecute(aBoolean);
             if (aBoolean) {
+                dialogAnimationMerge.dismiss();
+                dialogConfirmMergeVideo(Gravity.CENTER);
                 Log.d("FFFF", "onPostExecute: true");
             } else {
                 Log.d("FFFF", "onPostExecute: false");
             }
         }
-    }
 
+        private void dialogAnimation(int gravity){
+            dialogAnimationMerge = dialogCustom(gravity, R.layout.dialog_animation_merge_video);
+            dialogAnimationMerge.show();
+        }
+
+        private void percentMerge() {
+            Config.enableStatisticsCallback(statistics -> {
+                int progress = Integer.parseInt(String.valueOf(statistics.getTime())); // ms
+                Log.d("GGGG",progress + " ");
+
+                File file = new File(FOLDER_IMAGE);
+                int totalImageSize = file.listFiles().length;
+                percent =  (statistics.getVideoFrameNumber() *100)/totalImageSize ;
+                sendBroadcast(percent);
+                Log.d("GGGG","progressFinal" + percent + " " );
+            });
+        }
+    }
     public void updateData(String data) {
         if (data.contains("1")) {
             takePicture();
@@ -174,7 +245,6 @@ public class DownloadFragment extends Fragment {
         }
         return true;
     }
-
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -193,7 +263,6 @@ public class DownloadFragment extends Fragment {
     public void onResume() {
         super.onResume();
 //        ((MainActivity)getActivity()).connectThread();
-        startBackgroundThread();
         if (textureView.isAvailable()) {
             if (allPermissionsGranted()) {
                 openCamera();
@@ -209,7 +278,6 @@ public class DownloadFragment extends Fragment {
     @Override
     public void onPause() {
         closeCamera();
-        stopBackgroundThread();
 //        ((MainActivity)getActivity()).disconnectBluetooth();
         super.onPause();
     }
@@ -218,6 +286,13 @@ public class DownloadFragment extends Fragment {
     public void onStop() {
         super.onStop();
         Toast.makeText(getActivity(), "stop", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(receiver);
+        stopBackgroundThread();
     }
 
     private String cameraId;
@@ -265,6 +340,7 @@ public class DownloadFragment extends Fragment {
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
+
     }
 
     private final CameraDevice.StateCallback stateCallback = new CameraDevice.StateCallback() {
@@ -319,7 +395,8 @@ public class DownloadFragment extends Fragment {
         if (null == cameraDevice) {
             Log.e("GGG", "updatePreview error, return");
         }
-        captureRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
+     //   captureRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CameraMetadata.CONTROL_AE_MODE_ON);
+        captureRequestBuilder.set(CaptureRequest.CONTROL_AE_LOCK, false);
         try {
             cameraCaptureSessions.setRepeatingRequest(captureRequestBuilder.build(), null, mBackgroundHandler);
         } catch (CameraAccessException e) {
@@ -337,6 +414,32 @@ public class DownloadFragment extends Fragment {
             imageReader = null;
         }
     }
+
+
+
+    private CameraCaptureSession.CaptureCallback mSessionCaptureCallback = new CameraCaptureSession.CaptureCallback(){
+
+        @Override
+        public void onCaptureStarted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, long timestamp, long frameNumber) {
+            super.onCaptureStarted(session, request, timestamp, frameNumber);
+            Log.d("GGGG","onCaptureStarted");
+        //    captureRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, null);
+
+        }
+
+        @Override
+        public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
+            super.onCaptureCompleted(session, request, result);
+
+        }
+
+        @Override
+        public void onCaptureFailed(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureFailure failure) {
+            super.onCaptureFailed(session, request, failure);
+            Log.d("GGGG","Focus lock successful");
+        }
+    };
+
 
     private int click = 0;
     protected void takePicture() {
@@ -363,7 +466,11 @@ public class DownloadFragment extends Fragment {
             outputSurfaces.add(new Surface(textureView.getSurfaceTexture()));
             final CaptureRequest.Builder captureBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
             captureBuilder.addTarget(reader.getSurface());
-            captureBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
+
+            //captureBuilder.set(CaptureRequest.CONTROL_MODE,CameraMetadata.CONTROL_AF_MODE_AUTO );
+            captureBuilder.set(CaptureRequest.CONTROL_AE_LOCK, false);
+
+
             // Orientation
             int rotation = getActivity().getWindowManager().getDefaultDisplay().getRotation();
             captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, ORIENTATIONS.get(rotation));
@@ -377,7 +484,6 @@ public class DownloadFragment extends Fragment {
                 file.delete();
             }
             try {
-//                file.mkdirs();
                 file.createNewFile();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -420,6 +526,7 @@ public class DownloadFragment extends Fragment {
                     Log.d("GGG", "onCaptureCompleted: " + file.getPath());
                 }
             };
+
             cameraDevice.createCaptureSession(outputSurfaces, new CameraCaptureSession.StateCallback() {
                 @Override
                 public void onConfigured(CameraCaptureSession session) {
@@ -456,46 +563,22 @@ public class DownloadFragment extends Fragment {
         }
     }
 
-    private void mergeImageToVideo2 () {
-        nl.bravobit.ffmpeg.FFmpeg ffmpeg = nl.bravobit.ffmpeg.FFmpeg.getInstance(getActivity());
+    public long folderSize(File file) {
+        long length = 0;
+        File[] folderFiles = file.listFiles();
+        for (File f : folderFiles) {
+            length += f.length();
+        }
 
-        // to execute "ffmpeg -version" command you just need to pass "-version"
-        String input = "/data/user/0/com.qt.quoctrung.bluetooth__final__camera/files/images/IMG_%d.jpg";
-        String output = "/data/user/0/com.qt.quoctrung.bluetooth__final__camera/files/images/a.mp4";
-        String[] cmd = {"-start_number", "0", "-i", input, output};
-        ffmpeg.execute(cmd, new ExecuteBinaryResponseHandler() {
-
-            @Override
-            public void onStart() {}
-
-            @Override
-            public void onProgress(String message) {
-                Log.d("GGGG", "onProgress: " + message);
-            }
-
-            @Override
-            public void onFailure(String message) {
-                Log.d("GGGG", "onFailure: " + message);
-            }
-
-            @Override
-            public void onSuccess(String message) {
-                Log.d("GGGG", "onSuccess: " + message);
-            }
-
-            @Override
-            public void onFinish() {}
-
-        });
+        return length;
     }
 
-    private Boolean mergeImageToVideo () {
-        String input = "/data/user/0/com.qt.quoctrung.bluetooth__final__camera/files/images/IMG_%d.jpg";
-        String output = "/data/user/0/com.qt.quoctrung.bluetooth__final__camera/files/images/a.mp4";
-        String cmd = "-start_number 0 -i "+ input + " -r 30 -video_size 1280x720 -vcodec libx264 " + output;
-        //String cmd = "-framerate 1 -start_number 0 -i /data/user/0/com.qt.quoctrung.bluetooth__final__camera/files/IMG_%d.jpg -r 24 -video_size 1280x720 -vcodec libx264 /data/user/0/com.qt.quoctrung.bluetooth__final__camera/files/a2.mp4";
+    private Boolean mergeImageToVideo (String nameFile) {
+       // String cmd = "-start_number 0 -i "+ INPUT_VIDEO + " -r 25 -video_size 1280x720 -vcodec libx264 -pix_fmt yuv420p " + nameFile;
+        String cmd = "-start_number 0 -i " + INPUT_VIDEO +
+                " -r 25 -vcodec libx264 -crf 25 -vf scale=1920:1080 -pix_fmt yuv420p  " + nameFile;
+       // String cmd = "-start_number 0 -i " + INPUT_VIDEO + " -c:v libx264 -t 60 -pix_fmt yuv420p -vf scale=1920:1080 " + OUTPUT_VIDEO;
         int rc = FFmpeg.execute(cmd);
-
         if (rc == RETURN_CODE_SUCCESS) {
             click = 0;
             Log.i(Config.TAG, "Command execution completed successfully.");
@@ -505,8 +588,198 @@ public class DownloadFragment extends Fragment {
             return false;
         } else {
             Log.i(Config.TAG, String.format("Command execution failed with rc=%d and the output below.", rc));
-//            Config.printLastCommandOutput(Log.INFO);
             return false;
         }
     }
+
+    public void dialogCreateVideoCustom(int gravity){
+        final Dialog dialog = new Dialog(getActivity());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.custom_dialog_settings);
+        Window window = dialog.getWindow();
+        if (window == null) return;
+        window.getAttributes().windowAnimations = R.style.DialogAnimation;
+        window.setLayout(WindowManager.LayoutParams.MATCH_PARENT,WindowManager.LayoutParams.WRAP_CONTENT);
+        window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        WindowManager.LayoutParams windowAttributes = window.getAttributes();
+        windowAttributes.gravity = gravity;
+        window.setAttributes(windowAttributes);
+        if(Gravity.CENTER == gravity){
+            dialog.setCancelable(false);
+
+        }else{
+            dialog.setCancelable(true);
+        }
+
+        Button btnSendData, btnClose;
+        btnSendData = dialog.findViewById(R.id.btnSendDataCamera);
+        btnClose    = dialog.findViewById(R.id.btnCloseSettings);
+
+        EditText edtRadiusCurve, edtVideoLength, edtTimeAction;
+        edtRadiusCurve = dialog.findViewById(R.id.edtRadiusCurve);
+        edtVideoLength = dialog.findViewById(R.id.edtVideoLength);
+        edtTimeAction  = dialog.findViewById(R.id.edtTimeAction);
+
+        btnSendData.setOnClickListener(view -> {
+            valRadiusCurve = edtRadiusCurve.getText().toString().trim();
+            valVideoLength = edtVideoLength.getText().toString().trim();
+            valTimeAction  = edtTimeAction.getText().toString().trim();
+            try {
+                bluetoothManager.getBluetoothSocket().getOutputStream().write(("C" + valRadiusCurve + "r" + valVideoLength + "l" + valTimeAction + "t" + "#").getBytes());
+                Toast.makeText(getContext(), "Send data success!!!", Toast.LENGTH_SHORT).show();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            dialog.dismiss();
+        });
+
+        btnClose.setOnClickListener(view -> {
+            window.getAttributes().windowAnimations = R.style.CloseDialogAnimation;
+            dialog.dismiss();
+        });
+
+        dialog.show();
+    }
+
+    public void dialogMergeVideo(int gravity){
+        final Dialog dialog = new Dialog(getActivity());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_merge_video);
+        Window window = dialog.getWindow();
+        if (window == null) return;
+        window.setLayout(WindowManager.LayoutParams.MATCH_PARENT,WindowManager.LayoutParams.WRAP_CONTENT);
+        window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        WindowManager.LayoutParams windowAttributes = window.getAttributes();
+        windowAttributes.gravity = gravity;
+        window.setAttributes(windowAttributes);
+
+        if(Gravity.CENTER == gravity){
+            dialog.setCancelable(false);
+
+        }else{
+            dialog.setCancelable(true);
+        }
+
+        EditText edtFileName;
+        Button btnConfirm, btnExitMerge;
+
+        edtFileName  = dialog.findViewById(R.id.edtFileName);
+        btnConfirm   = dialog.findViewById(R.id.btnConfirm);
+        btnExitMerge = dialog.findViewById(R.id.btnExitMerge);
+
+        btnConfirm.setOnClickListener(view -> {
+            String valNameFile = edtFileName.getText().toString().trim() ;
+            File file = new File(FOLDER_VIDEO);
+            File[] listFile = file.listFiles();
+            if(valNameFile.length() != 0){
+                if(listFile.length == 0){
+                    valOutput = FOLDER_VIDEO + valNameFile + ".mp4";
+                    Log.d("GGG", valOutput);
+                }
+                else if(listFile.length != 0){
+                    for(int i = 0; i < listFile.length; i++){
+                        String name = listFile[i].getName();
+                        String nameOriginal = name.replace(".mp4", "");
+                        if(valNameFile.equals(nameOriginal)){
+                            Toast.makeText(getContext(), "File name is exiting", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        else{
+                            valOutput = FOLDER_VIDEO + valNameFile + ".mp4";
+                        }
+                    }
+                }
+            }
+            else{
+                Toast.makeText(getContext(), "Please enter file name", Toast.LENGTH_SHORT).show();
+                return;
+            }
+             if (!file.exists()) {
+                 file.mkdirs();
+             }
+
+             new MergeVidieo().execute();
+             dialog.dismiss();
+
+        });
+
+        btnExitMerge.setOnClickListener(view -> {
+            dialog.dismiss();
+        });
+        dialog.show();
+
+    }
+
+    private Dialog dialogCustom(int gravity, int layout) {
+        final Dialog dialog = new Dialog(getActivity());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(layout);
+        Window window = dialog.getWindow();
+        window.setLayout(WindowManager.LayoutParams.MATCH_PARENT,WindowManager.LayoutParams.WRAP_CONTENT);
+        window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        WindowManager.LayoutParams windowAttributes = window.getAttributes();
+        windowAttributes.gravity = gravity;
+        window.setAttributes(windowAttributes);
+        dialog.setCancelable(Gravity.CENTER == gravity);
+        return dialog;
+    }
+
+    private void dialogConfirmMergeVideo(int gravity){
+        final Dialog dialog = dialogCustom(gravity, R.layout.dialog_confirm_merge);
+        Button btnConfirmMerge;;
+        btnConfirmMerge = dialog.findViewById(R.id.btnConfirmMerge);
+        btnConfirmMerge.setOnClickListener(view -> {
+            dialog.dismiss();
+        });
+        dialog.show();
+    }
+
+    private void ShowPopupWindow(){
+            CardView cardSettings, cardMergeVideo, cardPlayVideo, cardDeleteFiles;
+            LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            View layout = inflater.inflate(R.layout.popup_windown, null);
+            window = new PopupWindow(layout, 670, 670, true);
+            window.setAnimationStyle(R.style.DialogAnimation);
+            window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            window.setOutsideTouchable(true);
+            window.showAtLocation(layout, Gravity.CENTER, 25, 10);
+            cardSettings    = layout.findViewById(R.id.settings);
+            cardMergeVideo  = layout.findViewById(R.id.merge_video);
+            cardPlayVideo   = layout.findViewById(R.id.play_video);
+            cardDeleteFiles = layout.findViewById(R.id.delete_files);
+            cardSettings.setOnClickListener(view -> {
+                dialogCreateVideoCustom(Gravity.CENTER);
+                Toast.makeText(getContext(), "Settings", Toast.LENGTH_SHORT).show();
+                window.dismiss();
+            });
+
+            cardMergeVideo.setOnClickListener(view -> {
+                dialogMergeVideo(Gravity.CENTER);
+                window.dismiss();
+            });
+
+            cardPlayVideo.setOnClickListener(view -> {
+                Intent intent = new Intent(getActivity(), ListVideoActivity.class);
+                startActivity(intent);
+                window.dismiss();
+
+            });
+
+            cardDeleteFiles.setOnClickListener(view -> {
+                File folder = new File(getActivity().getFilesDir() + "/images");
+                if (folder.exists()) {
+                    try {
+                        FileUtils.deleteDirectory(folder);
+                        Toast.makeText(getActivity(),"Delete success", Toast.LENGTH_SHORT).show();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        Toast.makeText(getActivity(),"Delete fail", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                window.dismiss();
+
+            });
+    }
+
+
 }

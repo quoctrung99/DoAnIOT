@@ -4,22 +4,22 @@
     app:cnb_unselectedColor="#fff">
 
     <item
-        android:icon="@drawable/ic_baseline_home_24"
+        android:icon="@drawable/icon_search"
         app:cnb_backgroundColor="#ff785b"
         app:cnb_iconColor="#fff"
         app:cnb_textColor="#fff"
-        android:title="Home"
+        android:title="Search"
         android:id="@+id/home"/>
 
     <item
-        android:icon="@drawable/ic_baseline_fiber_manual_record_24"
+        android:icon="@drawable/icon_manual"
         app:cnb_backgroundColor="#ff785b"
         app:cnb_iconColor="#fff"
         app:cnb_textColor="#fff"
         android:title="Manual"
         android:id="@+id/manual"/>
     <item
-        android:icon="@drawable/ic_auto"
+        android:icon="@drawable/icon_auto"
         app:cnb_backgroundColor="#ff785b"
         app:cnb_iconColor="#fff"
         app:cnb_textColor="#fff"
@@ -41,8 +41,5 @@
         app:cnb_textColor="#fff"
         android:title="Info"
         android:id="@+id/upload"/>
-
-
-
 
 </menu>

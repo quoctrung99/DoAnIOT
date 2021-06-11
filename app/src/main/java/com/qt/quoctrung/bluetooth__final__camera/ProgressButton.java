@@ -28,7 +28,7 @@ public class ProgressButton {
     }
 
     void buttonFinished(){
-        layout.setBackgroundColor(cardView.getResources().getColor(R.color.colorPrimary));
+        layout.setBackgroundColor(cardView.getResources().getColor(R.color.design_default_color_primary_dark));
         progressBar.setVisibility(View.GONE);
         txtLogin.setText("Done");
     }

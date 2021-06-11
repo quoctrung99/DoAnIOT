@@ -47,6 +47,7 @@ public class HomeFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         return inflater.inflate(R.layout.fragment_home, container, false);
     }
 
@@ -80,6 +81,7 @@ public class HomeFragment extends Fragment {
 
         Window window = dialog.getWindow();
         if (window == null) return;
+        window.getAttributes().windowAnimations = R.style.DialogAnimation;
         window.setLayout(WindowManager.LayoutParams.MATCH_PARENT,WindowManager.LayoutParams.WRAP_CONTENT);
         window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 

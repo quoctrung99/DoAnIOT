@@ -94,7 +94,7 @@
         android:layout_width="wrap_content"
         android:layout_height="45dp"
         android:background="@drawable/custom_edittext"
-        android:drawableEnd="@drawable/velocity"
+        android:drawableEnd="@drawable/icon_velocity"
         android:padding="12dp"
         android:textColor="@color/white"
         android:ems="10"
@@ -111,7 +111,7 @@
         android:inputType="number"
         android:padding="12dp"
         android:textColor="@color/white"
-        android:drawableEnd="@drawable/radius1"
+        android:drawableEnd="@drawable/icon_radius1111"
         app:layout_constraintStart_toStartOf="@+id/edtVelocity"
         app:layout_constraintTop_toBottomOf="@+id/textView11" />
 
@@ -139,5 +139,20 @@
         app:layout_constraintEnd_toEndOf="@+id/imgTop"
         app:layout_constraintStart_toStartOf="@+id/imgTop"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/floatingManual"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="32dp"
+        android:backgroundTint="@color/white"
+        android:src="@drawable/ic_baseline_menu_24"
+        android:clickable="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/edtRadius"
+        app:layout_constraintStart_toStartOf="@+id/edtRadius"
+        app:layout_constraintTop_toBottomOf="@+id/edtRadius"
+        app:rippleColor="@android:color/white"
+        tools:src="@tools:sample/avatars" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

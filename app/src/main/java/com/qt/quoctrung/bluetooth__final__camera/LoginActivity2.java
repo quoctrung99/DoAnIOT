@@ -51,9 +51,9 @@ public class LoginActivity2 extends AppCompatActivity {
                                 startActivity(intent);
                                 progressButton.buttonNormal();
                             }
-                        },1000);
+                        },350);
                     }
-                },3000);
+                },600);
             }
         });
 
@@ -87,8 +87,6 @@ public class LoginActivity2 extends AppCompatActivity {
 
         });
         edtEmail = dialog.findViewById(R.id.edtEmail_dialog);
-
         dialog.show();
-
     }
 }

@@ -28,7 +28,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.BLUETOOTH__FINAL__CAMERA"
         tools:replace="android:theme">
-        <activity android:name=".LogInActivity"/>
+        <activity
+            android:name=".ListVideoActivity"
+            android:screenOrientation="portrait"
+            />
+        <activity android:name=".LoginActivity2"
+            android:screenOrientation="portrait"
+            />
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|screenSize" />
@@ -36,7 +42,7 @@
             android:name=".PlayVideoActivity"
             android:configChanges="orientation|screenSize" />
         <activity
-            android:name=".LoginActivity2"
+            android:name=".AnimationActivity"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
