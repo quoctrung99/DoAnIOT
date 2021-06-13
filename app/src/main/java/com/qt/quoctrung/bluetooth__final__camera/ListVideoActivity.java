@@ -1,16 +1,11 @@
 package com.qt.quoctrung.bluetooth__final__camera;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.media.Image;
+import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.Window;
@@ -19,17 +14,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.qt.quoctrung.bluetooth__final__camera.model.Video;
 
-import org.apache.commons.io.FileUtils;
-
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-
-import dev.shreyaspatil.MaterialDialog.MaterialDialog;
 
 public class ListVideoActivity extends AppCompatActivity {
     private MyAdapterListVideo adapter;
@@ -92,14 +85,14 @@ public class ListVideoActivity extends AppCompatActivity {
         window.setAttributes(windowAttributes);
         if(Gravity.CENTER == gravity){
             dialog.setCancelable(true);
-
         }else{
             dialog.setCancelable(false);
         }
-        TextView txtPlayVideo, txtCancelVideo, txtDeleteVideo;
+        TextView txtPlayVideo, txtCancelVideo, txtDeleteVideo, txtShare;
         txtCancelVideo = dialog.findViewById(R.id.txtCancelVideo);
         txtPlayVideo  = dialog.findViewById(R.id.txtPlayVideo);
         txtDeleteVideo = dialog.findViewById(R.id.txtDeleteVideo);
+        txtShare = dialog.findViewById(R.id.txtShare);
         txtPlayVideo.setOnClickListener(view -> {
             Intent intent = new Intent(view.getContext(), PlayVideoActivity.class);
             value = adapter.updateFolder();
@@ -122,11 +115,23 @@ public class ListVideoActivity extends AppCompatActivity {
             dialog.dismiss();
         });
 
-        txtCancelVideo.setOnClickListener(view -> {
+        txtCancelVideo.setOnClickListener(view -> dialog.dismiss());
+
+        txtShare.setOnClickListener(view -> {
+            shareFile(adapter.updateFolder());
             dialog.dismiss();
         });
 
         dialog.show();
+    }
+
+    private void shareFile(String filePath) {
+        File file = new File(filePath);
+        Uri contentUri = FileProvider.getUriForFile(this, "com.qt.quoctrung.bluetooth__final__camera", file);
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.putExtra(Intent.EXTRA_STREAM, contentUri);
+        shareIntent.setType("text/plain");
+        startActivity(Intent.createChooser(shareIntent, "chooser"));
     }
 
 }

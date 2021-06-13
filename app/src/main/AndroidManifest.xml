@@ -36,12 +36,14 @@
             android:screenOrientation="portrait"
             />
         <activity
+            android:theme="@style/Theme.BLUETOOTH__FINAL__CAMERA"
             android:name=".MainActivity"
             android:configChanges="orientation|screenSize" />
         <activity
             android:name=".PlayVideoActivity"
             android:configChanges="orientation|screenSize" />
         <activity
+            android:theme="@style/Theme.BLUETOOTH__FINAL__CAMERA"
             android:name=".AnimationActivity"
             android:screenOrientation="portrait">
             <intent-filter>
@@ -50,6 +52,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.qt.quoctrung.bluetooth__final__camera"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
     </application>
 
 </manifest>

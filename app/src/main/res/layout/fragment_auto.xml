@@ -17,7 +17,6 @@
         android:text="Stop"
         android:textAllCaps="false"
         android:textColor="@color/white"
-        android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="@+id/btnStartDistance"
         app:layout_constraintStart_toStartOf="@+id/btnStartDistance"
         app:layout_constraintTop_toBottomOf="@+id/btnStartDistance" />
@@ -32,7 +31,6 @@
         android:text="Start"
         android:textAllCaps="false"
         android:textColor="@color/white"
-        android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="@+id/btnStopLineAuto"
         app:layout_constraintStart_toStartOf="@+id/btnStopLineAuto"
         app:layout_constraintTop_toBottomOf="@+id/btnStopLineAuto" />
@@ -68,7 +66,6 @@
         android:text="Stop"
         android:textAllCaps="false"
         android:textColor="@color/white"
-        android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="@+id/btnStartLineAuto"
         app:layout_constraintStart_toStartOf="@+id/btnStartLineAuto"
         app:layout_constraintTop_toBottomOf="@+id/btnStartLineAuto" />
@@ -83,7 +80,6 @@
         android:text="Start"
         android:textAllCaps="false"
         android:textColor="@color/white"
-        android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="@+id/edtDirectionLine"
         app:layout_constraintStart_toStartOf="@+id/edtDirectionLine"
         app:layout_constraintTop_toBottomOf="@+id/edtDirectionLine" />
@@ -93,7 +89,6 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-
         android:background="@drawable/custom_edittext"
         android:drawableEnd="@drawable/ic_baseline_directions_24"
         android:ems="10"
